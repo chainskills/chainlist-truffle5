@@ -1,0 +1,23 @@
+# Truffle
+build
+
+# Node
+node_modules
+package-lock.json
+
+# Mac specific
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# IDEA files
+.idea/compiler.xml
+.idea/chainlist.iml
+.idea/inspectionProfiles/
+.idea/**/workspace.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
