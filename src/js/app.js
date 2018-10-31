@@ -77,6 +77,38 @@ App = {
     } catch (error) {
       console.error(error.message);
     }
+  },
+
+  async sellArticle() {
+    // retrieve the detail of the article
+    const _article_name = $("#article_name").val();
+    const _description = $("#article_description").val();
+    const _price = web3.utils.toWei(
+      web3.utils.toBN(parseFloat($("#article_price").val() || 0)).toString(),
+      "ether"
+    );
+
+    if (_article_name.trim() == "" || _price == 0) {
+      // nothing to sell
+      return false;
+    }
+
+    try {
+      await App.chainListInstance.methods
+        .sellArticle(_article_name, _description, _price)
+        .send({
+          from: App.account,
+          gas: 500000
+        })
+        .on("transactionHash", function(hash) {
+          console.log("Transaction hash: " + hash);
+        })
+        .on("receipt", function(receipt) {
+          App.reloadArticles();
+        });
+    } catch (error) {
+      console.error(error.message);
+    }
   }
 };
 
