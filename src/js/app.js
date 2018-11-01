@@ -7,20 +7,34 @@ App = {
     return App.initWeb3();
   },
 
-  initWeb3() {
-    // Initialize web3
-    if (typeof web3 !== "undefined") {
-      // reuse the provider of the Web3 object injected in the browser
-      App.web3Provider = web3.currentProvider;
+  async initWeb3() {
+    if (window.ethereum) {
+      // Modern dapp browsers...
+      window.web3 = new Web3(ethereum);
+      try {
+        // Request account access if needed
+        await ethereum.enable();
+
+        App.displayAccountInfo();
+        return App.initContract();
+      
+      } catch (error) {
+        // User denied account access...
+        console.error("Unable to retrieve your accounts! You have to approve this application on Metamask.");
+      }
+    } else if (window.web3) {
+      // Legacy dapp browsers...
+      window.web3 = new Web3(web3.currentProvider || "ws://localhost:8545");
+    
+      App.displayAccountInfo();
+      return App.initContract();
+
     } else {
-      // create a new provider and plug it directly into our local node
-      App.web3Provider = new Web3.providers.HttpProvider(
-        "http://localhost:7545"
+      // Non-dapp browsers...
+      console.log(
+        "Non-Ethereum browser detected. You should consider trying MetaMask!"
       );
     }
-    web3 = new Web3(App.web3Provider);
-    App.displayAccountInfo();
-    return App.initContract();
   },
 
   async displayAccountInfo() {
