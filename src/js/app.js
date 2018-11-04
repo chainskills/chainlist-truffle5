@@ -3,7 +3,6 @@ App = {
     contracts: {},
     account: 0x0,
     logSellArticleEvent: null,
-    loading: false,
 
     init() {
         return App.initWeb3();
@@ -59,12 +58,6 @@ App = {
     },
 
     async reloadArticles() {
-        // avoid reentry
-        if (App.loading) {
-            return;
-        }
-        App.loading = true;
-
         // refresh account information because the balance might have changed
         App.displayAccountInfo();
 
@@ -74,7 +67,6 @@ App = {
             const article = await App.chainListInstance.methods.getArticle().call();
             if (article[0] == 0x0) {
                 // no article
-                App.loading = false;
                 return;
             }
 
@@ -92,12 +84,8 @@ App = {
 
             // add this new article
             $("#articlesRow").append(articleTemplate.html());
-
-            App.loading = false;
         } catch (error) {
             console.error(error.message);
-
-            App.loading = false;
         }
     },
 
@@ -124,9 +112,6 @@ App = {
                 })
                 .on("transactionHash", function(hash) {
                     console.log("Transaction hash: " + hash);
-                })
-                .on("receipt", function(receipt) {
-                    //App.reloadArticles();
                 });
         } catch (error) {
             console.error(error.message);
@@ -136,7 +121,7 @@ App = {
     // Listen to events triggered by the contract
     listenToEvents() {
         App.logSellArticleEvent = App.chainListInstance.events
-            .LogSellArticle({ fromBlock: 0, toBlock: "latest" })
+            .LogSellArticle({ fromBlock: "latest", toBlock: "latest" })
             .on("data", function(event) {
                 $("#events").append(
                     '<li class="list-group-item">' + event.returnValues._name + " is for sale" + "</li>"
