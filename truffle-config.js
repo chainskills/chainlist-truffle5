@@ -10,9 +10,8 @@ module.exports = {
         },
         chainskills: {
             host: "localhost",
-            port: 8546,
-            network_id: "4224", 
-            websockets: true
+            port: 8545,
+            network_id: "4224"
         }
     }
 };
