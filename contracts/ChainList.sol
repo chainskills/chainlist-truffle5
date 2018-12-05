@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity >0.4.99 <0.6.0;
 
 contract ChainList {
     // State variables
@@ -15,7 +15,7 @@ contract ChainList {
     }
 
     // sell an article
-    function sellArticle(string _name, string _description, uint256 _price) public {
+    function sellArticle(string memory _name, string memory _description, uint256 _price) public {
         seller = msg.sender;
         name = _name;
         description = _description;
@@ -25,8 +25,8 @@ contract ChainList {
     // get the article
     function getArticle() public view returns (
         address _seller,
-        string _name,
-        string _description,
+        string memory _name,
+        string memory _description,
         uint256 _price) {
         return(seller, name, description, price);
     }
