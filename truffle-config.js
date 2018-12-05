@@ -13,7 +13,7 @@ module.exports = {
         solc: {
             settings: {          // See the solidity docs for advice about optimization and evmVersion
                 optimizer: {
-                    enabled: false,
+                    enabled: true,
                     runs: 200
                 }
             }
