@@ -51,9 +51,6 @@ App = {
             const deployedAddress = artifact.networks[networkId].address;
             App.chainListInstance = new web3.eth.Contract(artifact.abi, deployedAddress);
 
-            // Listen to events
-            //App.listenToEvents();
-
             // retrieve the article from the contract
             return App.reloadArticles();
         });
@@ -165,17 +162,14 @@ App = {
                 })
                 .once('transactionHash', function (hash) {
                     console.log("transactionHash: " + hash);
-                    console.log(hash);
                 });
         } catch (error) {
             console.error(error.message);
         }
     },
 
-    // Listen to events triggered by the contract
-    subscribeEvent() {
+    subscribeEvents() {
         if (App.logSellArticleEvent == null) {
-            console.log("Into LogSellArticle");
             // watch for new article
             App.logSellArticleEvent = App.chainListInstance.events
                 .LogSellArticle({ fromBlock: 'latest' })
@@ -235,7 +229,6 @@ App = {
         $('.btn-show-events').hide();
         $('.btn-unsubscribe').hide();
         $('.btn-subscribe').show();
-
     }
 };
 
