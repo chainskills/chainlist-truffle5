@@ -25,6 +25,7 @@ contract ChainList {
     // sell an article
     function sellArticle(string memory _name, string memory _description, uint256 _price) public {
         seller = msg.sender;
+        buyer = address(0);
         name = _name;
         description = _description;
         price = _price;
