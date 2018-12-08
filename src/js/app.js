@@ -51,6 +51,9 @@ App = {
             const deployedAddress = artifact.networks[networkId].address;
             App.chainListInstance = new web3.eth.Contract(artifact.abi, deployedAddress);
 
+            // Subscribe to events
+            App.subscribeEvents();
+
             // retrieve the article from the contract
             return App.reloadArticles();
         });
