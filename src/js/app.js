@@ -69,55 +69,47 @@ App = {
         // refresh account information because the balance might have changed
         App.displayAccountInfo();
 
-        // retrieve the article placeholder and clear it
-        $("#articlesRow").empty();
-
         try {
-            const article = await App.chainListInstance.methods.getArticle().call();
-            if (article[0] == 0x0) {
-                // no article
-                App.loading = false;
-                return;
+            const articleIds = await App.chainListInstance.methods.getArticlesForSale().call()
+
+            // retrieve the article placeholder and clear it
+            $('#articlesRow').empty();
+
+            for (let i = 0; i < articleIds.length; i++) {
+                const article = await App.chainListInstance.methods.articles(articleIds[i]).call()
+
+                App.displayArticle(article[0], article[1], article[3], article[4], web3.utils.toBN(article[5]));
             }
-
-            // keep the price
-            const price = web3.utils.fromWei(web3.utils.toBN(article._price), "ether");
-
-            // Retrieve and fill the article template
-            const articleTemplate = $("#articleTemplate");
-            articleTemplate.find(".panel-title").text(article._name);
-            articleTemplate.find(".article-description").text(article._description);
-            articleTemplate.find(".article-price").text(price);
-            articleTemplate.find('.btn-buy').attr('data-value', price);
-
-            let seller = article._seller;
-            if (seller == App.account) {
-                seller = "You";
-            }
-            articleTemplate.find(".article-seller").text(seller);
-
-            // buyer
-            let buyer = article._buyer;
-            if (buyer == App.account) {
-                buyer = "You";
-            } else if (buyer == 0x0) {
-                buyer = "No one yet";
-            }
-            articleTemplate.find('.article-buyer').text(buyer);
-
-            if (article._seller == App.account || article._buyer != 0x0) {
-                articleTemplate.find('.btn-buy').hide();
-            } else {
-                articleTemplate.find('.btn-buy').show();
-            }
-
-            // add this new article
-            $("#articlesRow").append(articleTemplate.html());
+            App.loading = false;
         } catch (error) {
             console.error(error.message);
+            App.loading = false;
+        }
+    },
+
+    displayArticle(id, seller, name, description, price) {
+        const articlesRow = $('#articlesRow');
+
+        const etherPrice = web3.utils.fromWei(price, "ether");
+
+        const articleTemplate = $("#articleTemplate");
+        articleTemplate.find('.panel-title').text(name);
+        articleTemplate.find('.article-description').text(description);
+        articleTemplate.find('.article-price').text(etherPrice + " ETH");
+        articleTemplate.find('.btn-buy').attr('data-id', id);
+        articleTemplate.find('.btn-buy').attr('data-value', etherPrice);
+
+        // seller
+        if (seller == App.account) {
+            articleTemplate.find('.article-seller').text("You");
+            articleTemplate.find('.btn-buy').hide();
+        } else {
+            articleTemplate.find('.article-seller').text(seller);
+            articleTemplate.find('.btn-buy').show();
         }
 
-        App.loading = false;
+        // add this new article
+        articlesRow.append(articleTemplate.html());
     },
 
     async sellArticle() {
@@ -152,12 +144,13 @@ App = {
     async buyArticle() {
         event.preventDefault();
 
-        // retrieve the article
+        // retrieve the article details
+        const _articleId = $(event.target).data('id');
         const _price = web3.utils.toWei(web3.utils.toBN(parseFloat($(event.target).data('value')).toString(), "ether"));
 
         try {
             await App.chainListInstance.methods
-                .buyArticle()
+                .buyArticle(_articleId)
                 .send({
                     from: App.account,
                     value: _price,
