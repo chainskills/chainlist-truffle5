@@ -1,6 +1,8 @@
-pragma solidity >0.4.99 < 0.6.0;
+pragma solidity >0.4.99 <0.6.0;
 
-contract ChainList {
+import "./Ownable.sol";
+
+contract ChainList is Ownable {
     // Custom types
     struct Article {
         uint id;
@@ -30,18 +32,6 @@ contract ChainList {
         string _name,
         uint256 _price
     );
-
-    // Modifiers
-    modifier onlyOwner() {
-        // only allowed to the contract's owner
-        require(msg.sender == owner, "Only allowed to the contract's owner");
-        _;
-    }
-
-
-    constructor() public {
-        owner = msg.sender;
-    }
 
 
     // kill the smart contract
