@@ -168,7 +168,7 @@ App = {
         if (App.logSellArticleEvent == null) {
             // watch for new article
             App.logSellArticleEvent = App.chainListInstance.events
-                .LogSellArticle({ fromBlock: 'latest' })
+                .LogSellArticle({ fromBlock: '0' })
                 .on("data", function(event) {
                     $('#' + event.id).remove();
                     $("#events").append(
@@ -185,7 +185,7 @@ App = {
         if (App.logBuyArticleEvent == null) {
             // watch for sold article
             App.logBuyArticleEvent = App.chainListInstance.events
-                .LogBuyArticle({ fromBlock: 'latest' })
+                .LogBuyArticle({ fromBlock: '0' })
                 .on("data", function(event) {
                     $('#' + event.id).remove();
                     $("#events").append(
