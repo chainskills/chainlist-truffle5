@@ -31,6 +31,13 @@ contract ChainList {
         uint256 _price
     );
 
+    // Modifiers
+    modifier onlyOwner() {
+        // only allowed to the contract's owner
+        require(msg.sender == owner, "Only allowed to the contract's owner");
+        _;
+    }
+
 
     constructor() public {
         owner = msg.sender;
@@ -38,10 +45,7 @@ contract ChainList {
 
 
     // kill the smart contract
-    function kill() public {
-        // only allowed to the contract's owner
-        require(msg.sender == owner, "Only allowed to the contract's owner");
-
+    function kill() public onlyOwner {
         selfdestruct(owner);
     }
 
