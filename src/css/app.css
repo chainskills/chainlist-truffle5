@@ -16,3 +16,7 @@ body {
     display: inline;
     padding: 5px;
 }
+
+.btn-event {
+    margin-right: 10px;
+}

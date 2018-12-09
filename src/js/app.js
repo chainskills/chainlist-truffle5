@@ -3,6 +3,8 @@ App = {
     contracts: {},
     account: 0x0,
     logSellArticleEvent: null,
+    logBuyArticleEvent: null,
+    loading: false,
 
     init() {
         return App.initWeb3();
@@ -49,8 +51,8 @@ App = {
             const deployedAddress = artifact.networks[networkId].address;
             App.chainListInstance = new web3.eth.Contract(artifact.abi, deployedAddress);
 
-            // Listen to events
-            App.listenToEvents();
+            // Subscribe to events
+            App.subscribeEvents();
 
             // retrieve the article from the contract
             return App.reloadArticles();
@@ -58,35 +60,56 @@ App = {
     },
 
     async reloadArticles() {
+        // avoid reentry
+        if (App.loading) {
+            return;
+        }
+        App.loading = true;
+
         // refresh account information because the balance might have changed
         App.displayAccountInfo();
 
-        // retrieve the article placeholder and clear it
-        $("#articlesRow").empty();
         try {
-            const article = await App.chainListInstance.methods.getArticle().call();
-            if (article[0] == 0x0) {
-                // no article
-                return;
+            const articleIds = await App.chainListInstance.methods.getArticlesForSale().call()
+
+            // retrieve the article placeholder and clear it
+            $('#articlesRow').empty();
+
+            for (let i = 0; i < articleIds.length; i++) {
+                const article = await App.chainListInstance.methods.articles(articleIds[i]).call()
+
+                App.displayArticle(article[0], article[1], article[3], article[4], web3.utils.toBN(article[5]));
             }
-
-            // Retrieve and fill the article template
-            var articleTemplate = $("#articleTemplate");
-            articleTemplate.find(".panel-title").text(article._name);
-            articleTemplate.find(".article-description").text(article._description);
-            articleTemplate.find(".article-price").text(web3.utils.fromWei(web3.utils.toBN(article._price), "ether"));
-
-            var seller = article._seller;
-            if (seller == App.account) {
-                seller = "You";
-            }
-            articleTemplate.find(".article-seller").text(seller);
-
-            // add this new article
-            $("#articlesRow").append(articleTemplate.html());
+            App.loading = false;
         } catch (error) {
             console.error(error.message);
+            App.loading = false;
         }
+    },
+
+    displayArticle(id, seller, name, description, price) {
+        const articlesRow = $('#articlesRow');
+
+        const etherPrice = web3.utils.fromWei(price, "ether");
+
+        const articleTemplate = $("#articleTemplate");
+        articleTemplate.find('.panel-title').text(name);
+        articleTemplate.find('.article-description').text(description);
+        articleTemplate.find('.article-price').text(etherPrice + " ETH");
+        articleTemplate.find('.btn-buy').attr('data-id', id);
+        articleTemplate.find('.btn-buy').attr('data-value', etherPrice);
+
+        // seller
+        if (seller == App.account) {
+            articleTemplate.find('.article-seller').text("You");
+            articleTemplate.find('.btn-buy').hide();
+        } else {
+            articleTemplate.find('.article-seller').text(seller);
+            articleTemplate.find('.btn-buy').show();
+        }
+
+        // add this new article
+        articlesRow.append(articleTemplate.html());
     },
 
     async sellArticle() {
@@ -118,20 +141,90 @@ App = {
         }
     },
 
-    // Listen to events triggered by the contract
-    listenToEvents() {
-        App.logSellArticleEvent = App.chainListInstance.events
-            .LogSellArticle({ fromBlock: "latest", toBlock: "latest" })
-            .on("data", function(event) {
-                $("#events").append(
-                    '<li class="list-group-item">' + event.returnValues._name + " is for sale" + "</li>"
-                );
+    async buyArticle() {
+        event.preventDefault();
 
-                App.reloadArticles();
-            })
-            .on("error", function(error) {
-                console.error(error);
-            });
+        // retrieve the article details
+        const _articleId = $(event.target).data('id');
+        const _price = web3.utils.toWei(web3.utils.toBN(parseFloat($(event.target).data('value')).toString(), "ether"));
+
+        try {
+            await App.chainListInstance.methods
+                .buyArticle(_articleId)
+                .send({
+                    from: App.account,
+                    value: _price,
+                    gas: 500000
+                })
+                .once('transactionHash', function (hash) {
+                    console.log("transactionHash: " + hash);
+                });
+        } catch (error) {
+            console.error(error.message);
+        }
+    },
+
+    subscribeEvents() {
+        if (App.logSellArticleEvent == null) {
+            // watch for new article
+            App.logSellArticleEvent = App.chainListInstance.events
+                .LogSellArticle({ fromBlock: '0' })
+                .on("data", function(event) {
+                    $('#' + event.id).remove();
+                    $("#events").append(
+                        '<li class="list-group-item" id=' + event.id + '>' + event.returnValues._name + " is for sale" + "</li>"
+                    );
+
+                    App.reloadArticles();
+                })
+                .on("error", function(error) {
+                    console.error(error);
+                });
+        }
+
+        if (App.logBuyArticleEvent == null) {
+            // watch for sold article
+            App.logBuyArticleEvent = App.chainListInstance.events
+                .LogBuyArticle({ fromBlock: '0' })
+                .on("data", function(event) {
+                    $('#' + event.id).remove();
+                    $("#events").append(
+                        '<li class="list-group-item" id=' + event.id + '>' + event.returnValues._buyer + ' bought ' + event.returnValues._name + '</li>'
+                    );
+
+                    App.reloadArticles();
+                })
+                .on("error", function(error) {
+                    console.error(error);
+                });
+        }
+
+        // switch visibility of buttons
+        $('.btn-subscribe').hide();
+        $('.btn-unsubscribe').show();
+        $('.btn-show-events').show();
+    },
+
+    async unsubscribeEvents() {
+        if (App.logSellArticleEvent != null) {
+            console.log("Unsubscribe 1");
+            await App.logSellArticleEvent.unsubscribe();
+            App.logSellArticleEvent = null;
+        }
+
+        if (App.logBuyArticleEvent != null) {
+            console.log("Unsubscribe 2");
+            await App.logBuyArticleEvent.unsubscribe();
+            App.logBuyArticleEvent = null;
+        }
+
+        // force a close of the events area
+        $('#events')[0].className = "list-group collapse";
+
+        // switch visibility of buttons
+        $('.btn-show-events').hide();
+        $('.btn-unsubscribe').hide();
+        $('.btn-subscribe').show();
     }
 };
 
