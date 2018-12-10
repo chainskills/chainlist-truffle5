@@ -116,8 +116,7 @@ App = {
         // retrieve the detail of the article
         const _article_name = $("#article_name").val();
         const _description = $("#article_description").val();
-        const _price = web3.utils.toWei(
-            web3.utils.toBN(parseFloat($("#article_price") || 0)).toString(),
+        const _price = web3.utils.toWei(parseFloat($("#article_price") || 0),
             "ether"
         );
 
