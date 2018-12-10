@@ -1,34 +1,71 @@
-# ChainSkills Truffle Box
+# Chainlist - Your classifieds on Ethereum
 
-This Truffle Box has all you need to create a DApp by following the course delivered by [ChainSkills](https://www.udemy.com/getting-started-with-ethereum-solidity-development/).
+Sample Ethereum Dapp to create your classifieds on Ethereum.
 
-This box has been based from [pet-shop-box](https://github.com/truffle-box/pet-shop-box).
+This Dapp is linked to the course available on Udemy: https://www.udemy.com/getting-started-with-ethereum-solidity-development
 
-## Installation
+Follow the steps described below to install, deploy and run the Dapp.
 
-1. Install Truffle globally.
-    ```javascript
-    npm install -g truffle
-    ```
+## Warning
+**Make that you don't run your tests on the Ethereum's main net otherwise you will spend real ether with no chance to get it back**
 
-2. Download the box. This also takes care of installing the necessary dependencies.
-    ```javascript
-    truffle unbox chainskills/chainskills-box
-    ```
+## Prerequisites: Install tools and frameworks
 
-3. Run the development console.
-    ```javascript
-    truffle develop
-    ```
+To build, deploy and test your Dapp locally, you need to install the following tools and frameworks:
+* **node.js and npm**: https://nodejs.org/en/
+  * Node.js can be installed from an installation package or through some package managers such as Homebrew on a Mac.
 
-4. Compile and migrate the smart contracts. Note inside the development console we don't preface commands with `truffle`.
-    ```javascript
-    compile
-    migrate
-    ```
+* **Truffle**: https://github.com/trufflesuite/truffle
+  * Create and deploy your Dapp with this build framework for Ethereum.
+  
+  In this sample, we use the beta version of Truffle 5 that you can install in this way:
+  ```
+  npm uninstall -g truffle
+  npm install -g truffle@beta
+  ```
 
-5. Run the `liteserver` development server (outside the development console) for front-end hot reloading. Smart contract changes must be manually recompiled and migrated.
-    ```javascript
-    // Serves the front-end on http://localhost:3000
-    npm run dev
-    ```
+* **Ganache**: https://github.com/trufflesuite/ganache
+  * Development Ethereum node.
+
+
+* **Metamask**: https://metamask.io/
+  * Chrome extension to use Chrome as a Dapp browser.
+
+## Step 1. Clone the project
+
+`git clone https://github.com/chainskills/greetings-truffle5.git
+
+## Step 2. Start your Ethereum node
+
+Start Ganache. 
+
+The first account will be the default account used to deploy your contract.
+
+## Step 3. Configure your project
+
+Edit your file `truffle-config.js` to set the port number used by Ganache.
+
+## Step 4. Test your project
+
+Truffle uses Mocha and Chain to run your tests.
+
+```
+$ truffle test --network ganache
+```
+
+## Step 5. Compile and deploy your smart contract
+
+```
+$ truffle migrate --reset --compile-all --network ganache
+```
+
+The output will provide you useful information such as the total cost of your deployment.
+
+## Learn more
+
+If you want to know more about all the steps required to builds this Dapp step-by-step, you can subscribe to our course available on Udemy: https://www.udemy.com/getting-started-with-ethereum-solidity-development
+
+
+Have fun !!!
+
+ChainSkills Team - 2018
