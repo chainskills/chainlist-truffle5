@@ -1,235 +1,153 @@
-App = {
-    web3Provider: null,
-    contracts: {},
-    account: 0x0,
-    logSellArticleEvent: null,
-    logBuyArticleEvent: null,
-    loading: false,
+const ChainList = artifacts.require("ChainList");
 
-    init() {
-        return App.initWeb3();
-    },
+// test suite
+contract("ChainList", accounts => {
+    let chainListInstance;
+    const seller = accounts[1];
+    const buyer = accounts[2];
+    const articleName1 = "article 1";
+    const articleDescription1 = "Description for article 1";
+    const articlePrice1 = 3;
+    const articleName2 = "article 2";
+    const articleDescription2 = "Description for article 2";
+    const articlePrice2 = 6;
+    let sellerBalanceBeforeSale, sellerBalanceAfterSale;
+    let buyerBalanceBeforeSale, buyerBalanceAfterSale;
 
-    async initWeb3() {
-        if (window.ethereum) {
-            // Modern dapp browsers...
-            window.web3 = new Web3(ethereum);
-            try {
-                // Request account access if needed
-                await ethereum.enable();
+    before("setup contract for each test", async () => {
+        chainListInstance = await ChainList.deployed();
+    });
 
-                App.displayAccountInfo();
-                return App.initContract();
-            } catch (error) {
-                // User denied account access...
-                console.error("Unable to retrieve your accounts! You have to approve this application on Metamask.");
-            }
-        } else if (window.web3) {
-            // Legacy dapp browsers...
-            window.web3 = new Web3(web3.currentProvider || "ws://localhost:8545");
+    it("should be initialized with empty values", async () => {
+        const nbArticles = await chainListInstance.getNumberOfArticles();
+        assert.equal(web3.utils.toBN(nbArticles), 0, "number of articles must be zero");
 
-            App.displayAccountInfo();
-            return App.initContract();
-        } else {
-            // Non-dapp browsers...
-            console.log("Non-Ethereum browser detected. You should consider trying MetaMask!");
-        }
-    },
+        const articlesForSale = await chainListInstance.getArticlesForSale();
+        assert.equal(articlesForSale.length, 0, "there shouldn't be any article for sale");
+    });
 
-    async displayAccountInfo() {
-        const accounts = await web3.eth.getAccounts();
-        App.account = accounts[0];
-        $("#account").text(App.account);
+    // sell a first article
+    it("should let us sell a first article", async () => {
+        const receipt = await chainListInstance
+            .sellArticle(
+                articleName1,
+                articleDescription1,
+                web3.utils.toWei(web3.utils.toBN(articlePrice1).toString(), "ether"), {
+                    from: seller
+                });
 
-        const balance = await web3.eth.getBalance(App.account);
-        $("#accountBalance").text(web3.utils.fromWei(balance, "ether") + " ETH");
-    },
-
-    async initContract() {
-        const networkId = await web3.eth.net.getId();
-        $.getJSON("ChainList.json", function(artifact) {
-            const deployedAddress = artifact.networks[networkId].address;
-            App.chainListInstance = new web3.eth.Contract(artifact.abi, deployedAddress);
-
-            // Subscribe to events
-            App.subscribeEvents();
-
-            // retrieve the article from the contract
-            return App.reloadArticles();
-        });
-    },
-
-    async reloadArticles() {
-        // avoid reentry
-        if (App.loading) {
-            return;
-        }
-        App.loading = true;
-
-        // refresh account information because the balance might have changed
-        App.displayAccountInfo();
-
-        try {
-            const articleIds = await App.chainListInstance.methods.getArticlesForSale().call()
-
-            // retrieve the article placeholder and clear it
-            $('#articlesRow').empty();
-
-            for (let i = 0; i < articleIds.length; i++) {
-                const article = await App.chainListInstance.methods.articles(articleIds[i]).call()
-
-                App.displayArticle(article[0], article[1], article[3], article[4], web3.utils.toBN(article[5]));
-            }
-            App.loading = false;
-        } catch (error) {
-            console.error(error.message);
-            App.loading = false;
-        }
-    },
-
-    displayArticle(id, seller, name, description, price) {
-        const articlesRow = $('#articlesRow');
-
-        const etherPrice = web3.utils.fromWei(price, "ether");
-
-        const articleTemplate = $("#articleTemplate");
-        articleTemplate.find('.panel-title').text(name);
-        articleTemplate.find('.article-description').text(description);
-        articleTemplate.find('.article-price').text(etherPrice + " ETH");
-        articleTemplate.find('.btn-buy').attr('data-id', id);
-        articleTemplate.find('.btn-buy').attr('data-value', etherPrice);
-
-        // seller
-        if (seller == App.account) {
-            articleTemplate.find('.article-seller').text("You");
-            articleTemplate.find('.btn-buy').hide();
-        } else {
-            articleTemplate.find('.article-seller').text(seller);
-            articleTemplate.find('.btn-buy').show();
-        }
-
-        // add this new article
-        articlesRow.append(articleTemplate.html());
-    },
-
-    async sellArticle() {
-        // retrieve the detail of the article
-        const _article_name = $("#article_name").val();
-        const _description = $("#article_description").val();
-        const _price = web3.utils.toWei(
-            web3.utils.toBN(parseFloat($("#article_price").val() || 0)).toString(),
-            "ether"
+        assert.equal(receipt.logs.length, 1, "one event should have been triggered");
+        assert.equal(receipt.logs[0].event, "LogSellArticle", "event should be LogSellArticle");
+        assert.equal(receipt.logs[0].args._seller, seller, "seller must be " + seller);
+        assert.equal(receipt.logs[0].args._name, articleName1, "article name must be " + articleName1);
+        assert.equal(
+            web3.utils.toBN(receipt.logs[0].args._price),
+            web3.utils.toWei(web3.utils.toBN(articlePrice1).toString(), "ether"),
+            "event article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice1).toString(), "ether")
         );
 
-        if (_article_name.trim() == "" || _price == 0) {
-            // nothing to sell
-            return false;
-        }
+        const nbArticles = await chainListInstance.getNumberOfArticles();
+        assert.equal(web3.utils.toBN(nbArticles), 1, "number of articles must be 1");
 
-        try {
-            await App.chainListInstance.methods
-                .sellArticle(_article_name, _description, _price)
-                .send({
-                    from: App.account,
-                    gas: 500000
-                })
-                .on("transactionHash", function(hash) {
-                    console.log("Transaction hash: " + hash);
+        const articlesForSale = await chainListInstance.getArticlesForSale();
+        assert.equal(articlesForSale.length, 1, "there must be one article for sale");
+
+        const articles = await chainListInstance.articles(articlesForSale[0]);
+        assert.equal(web3.utils.toBN(articles[0]), 1, "article id must be 1");
+        assert.equal(articles[1], seller, "seller must be " + seller);
+        assert.equal(articles[2], 0x0, "buyer must be empty");
+        assert.equal(articles[3], articleName1, "article name must be " + articleName1);
+        assert.equal(articles[4], articleDescription1, "article description must be " + articleDescription1);
+        assert.equal(
+            web3.utils.toBN(articles[5]), web3.utils.toWei(web3.utils.toBN(articlePrice1).toString(), "ether"),
+            "event article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice1).toString(), "ether"));
+    });
+
+    // sell a second article
+    it("should let us sell a second article", async () => {
+        const receipt = await chainListInstance
+            .sellArticle(
+                articleName2,
+                articleDescription2,
+                web3.utils.toWei(web3.utils.toBN(articlePrice2).toString(), "ether"), {
+                    from: seller
                 });
-        } catch (error) {
-            console.error(error.message);
-        }
-    },
 
-    async buyArticle() {
-        event.preventDefault();
+        assert.equal(receipt.logs.length, 1, "one event should have been triggered");
+        assert.equal(receipt.logs[0].event, "LogSellArticle", "event should be LogSellArticle");
+        assert.equal(receipt.logs[0].args._seller, seller, "seller must be " + seller);
+        assert.equal(receipt.logs[0].args._name, articleName2, "article name must be " + articleName2);
+        assert.equal(
+            web3.utils.toBN(receipt.logs[0].args._price),
+            web3.utils.toWei(web3.utils.toBN(articlePrice2).toString(), "ether"),
+            "event article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice2).toString(), "ether")
+        );
 
-        // retrieve the article details
-        const _articleId = $(event.target).data('id');
-        const _price = web3.utils.toWei(web3.utils.toBN(parseFloat($(event.target).data('value')).toString(), "ether"));
+        const nbArticles = await chainListInstance.getNumberOfArticles();
+        assert.equal(web3.utils.toBN(nbArticles), 2, "number of articles must be 2");
 
-        try {
-            await App.chainListInstance.methods
-                .buyArticle(_articleId)
-                .send({
-                    from: App.account,
-                    value: _price,
-                    gas: 500000
-                })
-                .once('transactionHash', function (hash) {
-                    console.log("transactionHash: " + hash);
-                });
-        } catch (error) {
-            console.error(error.message);
-        }
-    },
+        const articlesForSale = await chainListInstance.getArticlesForSale();
+        assert.equal(articlesForSale.length, 2, "there must be two articles for sale");
 
-    subscribeEvents() {
-        if (App.logSellArticleEvent == null) {
-            // watch for new article
-            App.logSellArticleEvent = App.chainListInstance.events
-                .LogSellArticle({ fromBlock: '0' })
-                .on("data", function(event) {
-                    $('#' + event.id).remove();
-                    $("#events").append(
-                        '<li class="list-group-item" id=' + event.id + '>' + event.returnValues._name + " is for sale" + "</li>"
-                    );
+        const articles = await chainListInstance.articles(articlesForSale[1]);
+        assert.equal(web3.utils.toBN(articles[0]), 2, "article id must be 2");
+        assert.equal(articles[1], seller, "seller must be " + seller);
+        assert.equal(articles[2], 0x0, "buyer must be empty");
+        assert.equal(articles[3], articleName2, "article name must be " + articleName2);
+        assert.equal(articles[4], articleDescription2, "article description must be " + articleDescription2);
+        assert.equal(
+            web3.utils.toBN(articles[5]), web3.utils.toWei(web3.utils.toBN(articlePrice2).toString(), "ether"),
+            "event article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice2).toString(), "ether"));
+    });
 
-                    App.reloadArticles();
-                })
-                .on("error", function(error) {
-                    console.error(error);
-                });
-        }
+    // buy the first article
+    it("should let us buy the first article", async () => {
+        // record balances of seller and buyer before the sale
+        let balance = await web3.eth.getBalance(seller);
+        sellerBalanceBeforeSale = web3.utils.fromWei(balance, "ether");
 
-        if (App.logBuyArticleEvent == null) {
-            // watch for sold article
-            App.logBuyArticleEvent = App.chainListInstance.events
-                .LogBuyArticle({ fromBlock: '0' })
-                .on("data", function(event) {
-                    $('#' + event.id).remove();
-                    $("#events").append(
-                        '<li class="list-group-item" id=' + event.id + '>' + event.returnValues._buyer + ' bought ' + event.returnValues._name + '</li>'
-                    );
+        balance = await web3.eth.getBalance(buyer);
+        buyerBalanceBeforeSale = web3.utils.fromWei(balance, "ether");
 
-                    App.reloadArticles();
-                })
-                .on("error", function(error) {
-                    console.error(error);
-                });
-        }
+        // buy the article
+        let receipt = await chainListInstance
+            .buyArticle(1, {
+                from: buyer,
+                value: web3.utils.toWei(web3.utils.toBN(articlePrice1).toString(), "ether")
+            });
 
-        // switch visibility of buttons
-        $('.btn-subscribe').hide();
-        $('.btn-unsubscribe').show();
-        $('.btn-show-events').show();
-    },
+        assert.equal(receipt.logs.length, 1, "one event should have been triggered");
+        assert.equal(receipt.logs[0].event, "LogBuyArticle", "event should be LogSellArticle");
+        assert.equal(receipt.logs[0].args._seller, seller, "seller must be " + seller);
+        assert.equal(receipt.logs[0].args._buyer, buyer, "buyer must be " + buyer);
+        assert.equal(receipt.logs[0].args._name, articleName1, "article name must be " + articleName1);
+        assert.equal(
+            web3.utils.toBN(receipt.logs[0].args._price),
+            web3.utils.toWei(web3.utils.toBN(articlePrice1).toString(), "ether"),
+            "event article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice2).toString(), "ether")
+        );
 
-    async unsubscribeEvents() {
-        if (App.logSellArticleEvent != null) {
-            console.log("Unsubscribe 1");
-            await App.logSellArticleEvent.unsubscribe();
-            App.logSellArticleEvent = null;
-        }
+        // record balances of seller and buyer after the sale
+        balance = await web3.eth.getBalance(seller);
+        sellerBalanceAfterSale = web3.utils.fromWei(balance, "ether");
 
-        if (App.logBuyArticleEvent != null) {
-            console.log("Unsubscribe 2");
-            await App.logBuyArticleEvent.unsubscribe();
-            App.logBuyArticleEvent = null;
-        }
+        balance = await web3.eth.getBalance(buyer);
+        buyerBalanceAfterSale = web3.utils.fromWei(balance, "ether");
 
-        // force a close of the events area
-        $('#events')[0].className = "list-group collapse";
+        const articlesForSale = await chainListInstance.getArticlesForSale();
+        assert.equal(articlesForSale.length, 1, "there must be one article for sale");
 
-        // switch visibility of buttons
-        $('.btn-show-events').hide();
-        $('.btn-unsubscribe').hide();
-        $('.btn-subscribe').show();
-    }
-};
+        const nbArticles = await chainListInstance.getNumberOfArticles();
+        assert.equal(web3.utils.toBN(nbArticles), 2, "number of articles must be 2");
 
-$(function() {
-    $(window).load(function() {
-        App.init();
+        const articles = await chainListInstance.articles(articlesForSale[0]);
+        assert.equal(web3.utils.toBN(articles[0]), 2, "article id must be 2");
+        assert.equal(articles[1], seller, "seller must be " + seller);
+        assert.equal(articles[2], 0x0, "buyer must be empty");
+        assert.equal(articles[3], articleName2, "article name must be " + articleName2);
+        assert.equal(articles[4], articleDescription2, "article description must be " + articleDescription2);
+        assert.equal(
+            web3.utils.toBN(articles[5]), web3.utils.toWei(web3.utils.toBN(articlePrice2).toString(), "ether"),
+            "event article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice2).toString(), "ether"));
     });
 });
