@@ -25,3 +25,6 @@ npm-debug.log*
 
 # Visual Studio Code files
 .prettierrc
+
+# Environment variables
+.env
