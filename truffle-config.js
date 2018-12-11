@@ -17,10 +17,18 @@ module.exports = {
             network_id: "4224"
         },
         ropsten: {
-            provider: function() {
+            provider: function () {
                 return new HDWalletProvider(process.env.MNEMONIC, "https://ropsten.infura.io/v3/" + process.env.INFURA_PROJECT_ID);
             },
             network_id: 3,
+            gas: 4500000,
+            gasPrice: 10000000000
+        },
+        live: {
+            provider: function () {
+                return new HDWalletProvider(process.env.MNEMONIC, "https://mainnet.infura.io/v3/" + process.env.INFURA_PROJECT_ID);
+            },
+            network_id: 1,
             gas: 4500000,
             gasPrice: 10000000000
         }
