@@ -7,7 +7,7 @@ contract("ChainList", accounts => {
     const buyer = accounts[2];
     const articleName = "article 1";
     const articleDescription = "Description for article 1";
-    const articlePrice = 10;
+    const articlePrice = 1;
     let sellerBalanceBeforeSale, sellerBalanceAfterSale;
     let buyerBalanceBeforeSale, buyerBalanceAfterSale;
 
@@ -26,23 +26,17 @@ contract("ChainList", accounts => {
     });
 
     it("should let us sell a first article", async () => {
-        const receipt = await chainListInstance.sellArticle(
+        await chainListInstance.sellArticle(
             articleName,
             articleDescription,
-            web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether"),
-            {from: seller}
-        );
+            web3.utils.toWei(parseFloat(articlePrice).toString(), "ether"), {from: seller});
         const article = await chainListInstance.getArticle();
 
         assert.equal(article._seller, seller, "seller must be " + seller);
         assert.equal(article._buyer, 0x0, "buyer must be empty");
         assert.equal(article._name, articleName, "article name must be " + articleName);
         assert.equal(article._description, articleDescription, "description must be " + articleDescription);
-        assert.equal(
-            web3.utils.toBN(article._price),
-            web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether"),
-            "article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether")
-        );
+        assert.equal(web3.utils.toBN(article._price), web3.utils.toWei(parseFloat(articlePrice).toString(), "ether"), "article price must be " + web3.utils.toWei(parseFloat(articlePrice).toString(), "ether"));
     });
 
     // Test case: should check events
@@ -50,8 +44,8 @@ contract("ChainList", accounts => {
         const receipt = await chainListInstance.sellArticle(
             articleName,
             articleDescription,
-            web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether"),
-            {from: seller}
+            web3.utils.toWei(parseFloat(articlePrice).toString(), "ether"),
+            { from: seller }
         );
 
         assert.equal(receipt.logs.length, 1, "one event should have been triggered");
@@ -77,7 +71,7 @@ contract("ChainList", accounts => {
         await chainListInstance
             .buyArticle({
                 from: buyer,
-                value: web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether")
+                value: web3.utils.toWei(parseFloat(articlePrice).toString(), "ether")
             });
 
         // record balances of seller and buyer after the sale
@@ -95,8 +89,8 @@ contract("ChainList", accounts => {
         assert.equal(article._description, articleDescription, "description must be " + articleDescription);
         assert.equal(
             web3.utils.toBN(article._price),
-            web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether"),
-            "article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether")
+            web3.utils.toWei(parseFloat(articlePrice).toString(), "ether"),
+            "article price must be " + web3.utils.toWei(parseFloat(articlePrice).toString(), "ether")
         );
 
         // check the effect of buy on balances of buyer and seller, accounting for gas
