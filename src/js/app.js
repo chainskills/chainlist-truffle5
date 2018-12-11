@@ -119,12 +119,11 @@ App = {
 
     async sellArticle() {
         // retrieve the detail of the article
+        const articlePrice = isNaN(parseFloat($("#article_price").val())) ? "0" : parseFloat($("#article_price").val()).toString();
+
         const _article_name = $("#article_name").val();
         const _description = $("#article_description").val();
-        const _price = web3.utils.toWei(
-            web3.utils.toBN(parseFloat($("#article_price").val() || 0)).toString(),
-            "ether"
-        );
+        const _price = web3.utils.toWei(articlePrice, "ether");
 
         if (_article_name.trim() == "" || _price == 0) {
             // nothing to sell
@@ -149,8 +148,10 @@ App = {
     async buyArticle() {
         event.preventDefault();
 
-        // retrieve the article
-        const _price = web3.utils.toWei(web3.utils.toBN(parseFloat($(event.target).data('value')).toString(), "ether"));
+        // retrieve the article's price
+        const articlePrice = isNaN(parseFloat($(event.target).data('value'))) ? "0" : parseFloat($(event.target).data('value')).toString();
+
+        const _price = web3.utils.toWei(articlePrice, "ether");
 
         try {
             await App.chainListInstance.methods
