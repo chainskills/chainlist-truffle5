@@ -48,7 +48,7 @@ contract("ChainList", accounts => {
         } catch(e){
             assert(true)
         }
-    })
+    });
 
     // buying an article you are selling
     it("should throw an exception if you try to buy your own article", async () => {
