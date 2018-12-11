@@ -8,7 +8,7 @@ contract("ChainList", accounts => {
     const buyer2 = accounts[3];
     const articleName = "article 1";
     const articleDescription = "Description for article 1";
-    const articlePrice = 10;
+    const articlePrice = 1.5;
 
     before("setup contract for each test", async () => {
         chainListInstance = await ChainList.deployed();
@@ -20,7 +20,7 @@ contract("ChainList", accounts => {
             await chainListInstance
                 .buyArticle({
                     from: buyer1,
-                    value: web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether")
+                    value: web3.utils.toWei(parseFloat(articlePrice).toString(), "ether")
                 });
 
             // we should never reach this step
@@ -44,7 +44,7 @@ contract("ChainList", accounts => {
         await chainListInstance.sellArticle(
             articleName,
             articleDescription,
-            web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether"),
+            web3.utils.toWei(parseFloat(articlePrice).toString(), "ether"),
             {from: seller}
         );
 
@@ -52,7 +52,7 @@ contract("ChainList", accounts => {
             await chainListInstance.methods
                 .buyArticle({
                     from: seller,
-                    value: web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether")
+                    value: web3.utils.toWei(parseFloat(articlePrice).toString(), "ether")
                 });
 
             // we should never reach this step
@@ -69,8 +69,8 @@ contract("ChainList", accounts => {
         assert.equal(article._description, articleDescription, "description must be " + articleDescription);
         assert.equal(
             web3.utils.toBN(article._price),
-            web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether"),
-            "article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether")
+            web3.utils.toWei(parseFloat(articlePrice).toString(), "ether"),
+            "article price must be " + web3.utils.toWei(parseFloat(articlePrice).toString(), "ether")
         );
     });
 
@@ -80,7 +80,7 @@ contract("ChainList", accounts => {
             await chainListInstance
                 .buyArticle({
                     from: buyer1,
-                    value: web3.utils.toWei(web3.utils.toBN(articlePrice + 1).toString(), "ether")
+                    value: web3.utils.toWei(parseFloat(articlePrice + 1).toString(), "ether")
                 });
 
             // we should never reach this step
@@ -97,8 +97,8 @@ contract("ChainList", accounts => {
         assert.equal(article._description, articleDescription, "description must be " + articleDescription);
         assert.equal(
             web3.utils.toBN(article._price),
-            web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether"),
-            "article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether")
+            web3.utils.toWei(parseFloat(articlePrice).toString(), "ether"),
+            "article price must be " + web3.utils.toWei(parseFloat(articlePrice).toString(), "ether")
         );
     });
 
@@ -107,14 +107,14 @@ contract("ChainList", accounts => {
         await chainListInstance
             .buyArticle({
                 from: buyer1,
-                value: web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether")
+                value: web3.utils.toWei(parseFloat(articlePrice).toString(), "ether")
             });
 
         try {
             await chainListInstance
                 .buyArticle({
                     from: buyer2,
-                    value: web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether")
+                    value: web3.utils.toWei(parseFloat(articlePrice).toString(), "ether")
                 })
 
             // we should never reach this step
@@ -131,8 +131,8 @@ contract("ChainList", accounts => {
         assert.equal(article._description, articleDescription, "description must be " + articleDescription);
         assert.equal(
             web3.utils.toBN(article._price),
-            web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether"),
-            "article price must be " + web3.utils.toWei(web3.utils.toBN(articlePrice).toString(), "ether")
+            web3.utils.toWei(parseFloat(articlePrice).toString(), "ether"),
+            "article price must be " + web3.utils.toWei(parseFloat(articlePrice).toString(), "ether")
         );
     });
 
