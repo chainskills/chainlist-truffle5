@@ -63,7 +63,7 @@ The output will provide you useful information such as the total cost of your de
 
 ## Learn more
 
-If you want to know more about all the steps required to builds this Dapp step-by-step, you can subscribe to our course available on Udemy: https://www.udemy.com/getting-started-with-ethereum-solidity-development
+If you want to know more about all the steps required to build this Dapp step-by-step, you can subscribe to our course available on Udemy: https://www.udemy.com/getting-started-with-ethereum-solidity-development
 
 
 Have fun !!!
