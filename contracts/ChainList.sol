@@ -23,4 +23,4 @@ contract ChainList {
         uint256 _price) {
         return(seller, name, description, price);
     }
-}}
+}
