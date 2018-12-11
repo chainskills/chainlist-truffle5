@@ -6,7 +6,7 @@ contract("ChainList", accounts => {
     const seller = accounts[1];
     const articleName = "article 1";
     const articleDescription = "Description for article 1";
-    const articlePrice = 10.5;
+    const articlePrice = 10;
 
     before('setup contract for each test', async () => {
         chainListInstance = await ChainList.deployed();
