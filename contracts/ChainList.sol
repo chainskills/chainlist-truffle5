@@ -14,7 +14,6 @@ contract ChainList is Ownable {
     }
 
     // State variables
-    address payable owner;
     mapping(uint => Article) public articles;
     uint articleCounter;
 
