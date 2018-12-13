@@ -63,6 +63,7 @@ contract ChainList is Ownable {
             _description,
             _price);
 
+        // trigger the event
         emit LogSellArticle(articleCounter, msg.sender, _name, _price);
     }
 
