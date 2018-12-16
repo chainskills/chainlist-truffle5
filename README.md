@@ -1,34 +1,10 @@
-# ChainSkills Truffle Box
+# Chainlist - Your classifieds on Ethereum
 
-This Truffle Box has all you need to create a DApp by following the course delivered by [ChainSkills](https://www.udemy.com/getting-started-with-ethereum-solidity-development/).
+Sample Ethereum Dapp to create your classifieds on Ethereum.
 
-This box has been based from [pet-shop-box](https://github.com/truffle-box/pet-shop-box).
+This Dapp is linked to the course available on Udemy: https://www.udemy.com/getting-started-with-ethereum-solidity-development
 
-## Installation
+Follow the steps described below to install, deploy and run the Dapp.
 
-1. Install Truffle globally.
-    ```javascript
-    npm install -g truffle
-    ```
-
-2. Download the box. This also takes care of installing the necessary dependencies.
-    ```javascript
-    truffle unbox chainskills/chainskills-box
-    ```
-
-3. Run the development console.
-    ```javascript
-    truffle develop
-    ```
-
-4. Compile and migrate the smart contracts. Note inside the development console we don't preface commands with `truffle`.
-    ```javascript
-    compile
-    migrate
-    ```
-
-5. Run the `liteserver` development server (outside the development console) for front-end hot reloading. Smart contract changes must be manually recompiled and migrated.
-    ```javascript
-    // Serves the front-end on http://localhost:3000
-    npm run dev
-    ```
+## Warning
+**Make that you don't run your tests on the Ethereum's main net otherwise you will spend real ether with no chance to get it back**
