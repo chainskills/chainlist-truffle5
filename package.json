@@ -1,6 +1,6 @@
 {
-  "name": "chainskills",
-  "version": "1.0.0",
+  "name": "ChainList",
+  "version": "0.2.0",
   "description": "",
   "main": "truffle-config.js",
   "directories": {
@@ -10,7 +10,10 @@
     "dev": "lite-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "ChainSkills",
+  "author": {
+    "name": "ChainSkills",
+    "url": "https://github.com/chainskills"
+  },
   "license": "ISC",
   "devDependencies": {
     "lite-server": "^2.4.0"
