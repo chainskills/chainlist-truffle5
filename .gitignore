@@ -3,7 +3,6 @@ build
 
 # Node
 node_modules
-package-lock.json
 
 # Mac specific
 .DS_Store
@@ -14,8 +13,9 @@ logs
 npm-debug.log*
 
 # IDEA files
+.idea/encodings.xml
 .idea/compiler.xml
-.idea/chainlist.iml
+.idea/chainlist-truffle5.iml
 .idea/inspectionProfiles/
 .idea/**/workspace.xml
 .idea/misc.xml
