@@ -41,7 +41,7 @@ contract("ChainList", accounts => {
         assert.equal(receipt.logs[0].args._seller, seller, "seller must be " + seller);
         assert.equal(receipt.logs[0].args._name, articleName1, "article name must be " + articleName1);
         assert.equal(
-            web3.utils.toBN(receipt.logs[0].args._price),
+            web3.utils.toBN(receipt.logs[0].args._price).toString(),
             web3.utils.toWei(parseFloat(articlePrice1).toString(), "ether"),
             "event article price must be " + web3.utils.toWei(parseFloat(articlePrice1).toString(), "ether")
         );
@@ -59,7 +59,7 @@ contract("ChainList", accounts => {
         assert.equal(articles[3], articleName1, "article name must be " + articleName1);
         assert.equal(articles[4], articleDescription1, "article description must be " + articleDescription1);
         assert.equal(
-            web3.utils.toBN(articles[5]), web3.utils.toWei(parseFloat(articlePrice1).toString(), "ether"),
+            web3.utils.toBN(articles[5]).toString(), web3.utils.toWei(parseFloat(articlePrice1).toString(), "ether"),
             "event article price must be " + web3.utils.toWei(parseFloat(articlePrice1).toString(), "ether"));
     });
 
@@ -78,7 +78,7 @@ contract("ChainList", accounts => {
         assert.equal(receipt.logs[0].args._seller, seller, "seller must be " + seller);
         assert.equal(receipt.logs[0].args._name, articleName2, "article name must be " + articleName2);
         assert.equal(
-            web3.utils.toBN(receipt.logs[0].args._price),
+            web3.utils.toBN(receipt.logs[0].args._price).toString(),
             web3.utils.toWei(parseFloat(articlePrice2).toString(), "ether"),
             "event article price must be " + web3.utils.toWei(parseFloat(articlePrice2).toString(), "ether")
         );
@@ -96,7 +96,7 @@ contract("ChainList", accounts => {
         assert.equal(articles[3], articleName2, "article name must be " + articleName2);
         assert.equal(articles[4], articleDescription2, "article description must be " + articleDescription2);
         assert.equal(
-            web3.utils.toBN(articles[5]), web3.utils.toWei(parseFloat(articlePrice2).toString(), "ether"),
+            web3.utils.toBN(articles[5]).toString(), web3.utils.toWei(parseFloat(articlePrice2).toString(), "ether"),
             "event article price must be " + web3.utils.toWei(parseFloat(articlePrice2).toString(), "ether"));
     });
 
@@ -122,7 +122,7 @@ contract("ChainList", accounts => {
         assert.equal(receipt.logs[0].args._buyer, buyer, "buyer must be " + buyer);
         assert.equal(receipt.logs[0].args._name, articleName1, "article name must be " + articleName1);
         assert.equal(
-            web3.utils.toBN(receipt.logs[0].args._price),
+            web3.utils.toBN(receipt.logs[0].args._price).toString(),
             web3.utils.toWei(parseFloat(articlePrice1).toString(), "ether"),
             "event article price must be " + web3.utils.toWei(parseFloat(articlePrice1).toString(), "ether")
         );
@@ -147,7 +147,7 @@ contract("ChainList", accounts => {
         assert.equal(articles[3], articleName2, "article name must be " + articleName2);
         assert.equal(articles[4], articleDescription2, "article description must be " + articleDescription2);
         assert.equal(
-            web3.utils.toBN(articles[5]), web3.utils.toWei(parseFloat(articlePrice2).toString(), "ether"),
+            web3.utils.toBN(articles[5]).toString(), web3.utils.toWei(parseFloat(articlePrice2).toString(), "ether"),
             "event article price must be " + web3.utils.toWei(parseFloat(articlePrice2).toString(), "ether"));
     });
 });
