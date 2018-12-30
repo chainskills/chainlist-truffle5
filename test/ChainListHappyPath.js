@@ -134,6 +134,10 @@ contract("ChainList", accounts => {
         balance = await web3.eth.getBalance(buyer);
         buyerBalanceAfterSale = web3.utils.fromWei(balance, "ether");
 
+        //check the effect of buy on balances of buyer and seller, accounting for gas
+        assert(sellerBalanceAfterSale == (parseFloat(sellerBalanceBeforeSale) + parseFloat(articlePrice1)), "seller should have earned " + articlePrice1 + " ETH");
+        assert(buyerBalanceAfterSale <= (parseFloat(buyerBalanceBeforeSale) - parseFloat(articlePrice1)), "buyer should have spent " + articlePrice1 + " ETH");
+
         const articlesForSale = await chainListInstance.getArticlesForSale();
         assert.equal(articlesForSale.length, 1, "there must be one article for sale");
 
@@ -149,5 +153,7 @@ contract("ChainList", accounts => {
         assert.equal(
             web3.utils.toBN(articles[5]).toString(), web3.utils.toWei(parseFloat(articlePrice2).toString(), "ether"),
             "event article price must be " + web3.utils.toWei(parseFloat(articlePrice2).toString(), "ether"));
+
+
     });
 });
